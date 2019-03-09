@@ -4,5 +4,6 @@ using UnityEngine;
 
 interface IAnima
 {
-    void Movimento(string nome, bool gatilho);
+    void AnimaBool(string nome, bool gatilho);
+    void AnimaFloat(string nome, float gatilho, float dampTime, float deltaTime);
 }

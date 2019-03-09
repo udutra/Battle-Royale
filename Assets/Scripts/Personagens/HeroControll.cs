@@ -11,17 +11,21 @@ public class HeroControll : MonoBehaviour, IAnima
     public Animator animator;
     [SerializeField]
     public float puloForca;
+    private bool abaixado;
+    public bool NoChaoBool;
 
     void Start()
     {
-        
+        abaixado = false;
+        AnimaBool("Abaixar", abaixado);
     }
 
     void Update()
     {
         if (controller.isGrounded)
         {
-            Movimento("caiu", false);
+            AnimaBool("NoChao", false);
+            NoChaoBool = false;
             CalculoMovimentoAng();
 
             //Pulo
@@ -32,12 +36,122 @@ public class HeroControll : MonoBehaviour, IAnima
         }
         else
         {
-            Movimento("caiu", true);
+            AnimaBool("NoChao", true);
+            NoChaoBool = true;
         }
 
         moveDir.y -= gravidade * Time.deltaTime;
-        Console.WriteLine("MoveDir: " + moveDir);
         controller.Move(moveDir);
+    }
+
+    /*private void MovimentoPersonagem()
+    {
+        //Moviemnto do Eixo Z +
+        if(Input.GetAxis("Vertical") > 0)
+        {
+            AnimaBool("direita", false);
+            AnimaBool("esquerda", false);
+            AnimaBool("diagonalDireita", false);
+            AnimaBool("diagonalEsquerda", false);
+            AnimaBool("correrB", false);
+            AnimaBool("correr", true);
+        }
+        
+        //Moviemnto do Eixo Z -
+        if (Input.GetAxis("Vertical") < 0)
+        {
+            AnimaBool("direita", false);
+            AnimaBool("esquerda", false);
+            AnimaBool("diagonalEsquerdaT", false);
+            AnimaBool("diagonalDireitaT", false);
+            AnimaBool("correr", false);
+            AnimaBool("correrB", true);
+        }
+
+        //Moviemnto do Eixo X +
+        if (Input.GetAxis("Horizontal") > 0)
+        {
+            AnimaBool("correrB", false);
+            AnimaBool("correr", false);
+            AnimaBool("diagonalDireita", false);
+            AnimaBool("diagonalEsquerda", false);
+            AnimaBool("diagonalEsquerdaT", false);
+            AnimaBool("diagonalDireitaT", false);
+            AnimaBool("direita", true);
+        }
+
+        //Moviemnto do Eixo X -
+        if (Input.GetAxis("Horizontal") < 0)
+        {
+            AnimaBool("correrB", false);
+            AnimaBool("correr", false);
+            AnimaBool("diagonalEsquerdaT", false);
+            AnimaBool("diagonalDireitaT", false);
+            AnimaBool("diagonalDireita", false);
+            AnimaBool("diagonalEsquerda", false);
+            AnimaBool("esquerda", true);
+        }
+
+        //Movimento Diagonal Direita Frente
+        if (Input.GetAxis("Vertical") > 0 && Input.GetAxis("Horizontal") > 0)
+        {
+            AnimaBool("correr", false);
+            AnimaBool("direita", false);
+            AnimaBool("diagonalDireita", true);
+        }
+
+        //Movimento Diagonal Esquerda Frente
+        if (Input.GetAxis("Vertical") > 0 && Input.GetAxis("Horizontal") < 0)
+        {
+            AnimaBool("diagonalEsquerda", true);
+            AnimaBool("correr", false);
+            AnimaBool("esquerda", false);
+        }
+
+        //Movimento Diagonal Direita Trás
+        if (Input.GetAxis("Vertical") < 0 && Input.GetAxis("Horizontal") > 0)
+        {
+            AnimaBool("correrB", false);
+            AnimaBool("direita", false);
+            AnimaBool("diagonalDireitaT", true);
+        }
+
+        //Movimento Diagonal Esquerda Trás
+        else if (Input.GetAxis("Vertical") < 0 && Input.GetAxis("Horizontal") < 0)
+        {
+            AnimaBool("diagonalEsquerdaT", true);
+            AnimaBool("correrB", false);
+            AnimaBool("esquerda", false);
+        }
+
+        //Idle
+        if (Input.GetAxis("Vertical") == 0 && Input.GetAxis("Horizontal") == 0)
+        {
+            AnimaBool("correrB", false);
+            AnimaBool("correr", false);
+            AnimaBool("direita", false);
+            AnimaBool("esquerda", false);
+            AnimaBool("diagonalDireita", false);
+            AnimaBool("diagonalEsquerda", false);
+            AnimaBool("diagonalEsquerdaT", false);
+            AnimaBool("diagonalDireitaT", false);
+        }
+    }*/
+
+    public void AnimaBool(string nome, bool gatilho)
+    {
+        animator.SetBool(nome, gatilho);
+    }
+
+    public void AnimaFloat(string nome, float gatilho, float dampTime, float deltaTime)
+    {
+        animator.SetFloat(nome, gatilho, dampTime, deltaTime);
+    }
+
+    private void DefineAnimacaoAbaixar()
+    {
+        abaixado = !abaixado;
+        AnimaBool("Abaixar", abaixado);
     }
 
     private void CalculoMovimentoAng()
@@ -51,107 +165,44 @@ public class HeroControll : MonoBehaviour, IAnima
         Vector3 lado = transform.right * moveX;
 
         moveDir = frente + lado;
-        moveDir *= 2;
-
-        MovimentoPersonagem();
-    }
-
-    private void MovimentoPersonagem()
-    {
-        //Moviemnto do Eixo Z +
-        if(Input.GetAxis("Vertical") > 0)
-        {
-            Movimento("direita", false);
-            Movimento("esquerda", false);
-            Movimento("diagonalDireita", false);
-            Movimento("diagonalEsquerda", false);
-            Movimento("correrB", false);
-            Movimento("correr", true);
-        }
         
-        //Moviemnto do Eixo Z -
-        if (Input.GetAxis("Vertical") < 0)
-        {
-            Movimento("direita", false);
-            Movimento("esquerda", false);
-            Movimento("diagonalEsquerdaT", false);
-            Movimento("diagonalDireitaT", false);
-            Movimento("correr", false);
-            Movimento("correrB", true);
-        }
+        AnimaFloat("InputVertical", Input.GetAxis("Vertical"), 0.1f, Time.deltaTime);
+        AnimaFloat("InputHorizontal", Input.GetAxis("Horizontal"), 0.1f, Time.deltaTime);
 
-        //Moviemnto do Eixo X +
-        if (Input.GetAxis("Horizontal") > 0)
-        {
-            Movimento("correrB", false);
-            Movimento("correr", false);
-            Movimento("diagonalDireita", false);
-            Movimento("diagonalEsquerda", false);
-            Movimento("diagonalEsquerdaT", false);
-            Movimento("diagonalDireitaT", false);
-            Movimento("direita", true);
-        }
+        Corrida();
+        VerificaAbaixado();
+    }
 
-        //Moviemnto do Eixo X -
-        if (Input.GetAxis("Horizontal") < 0)
+    private void VerificaAbaixado()
+    {
+        if (abaixado)
         {
-            Movimento("correrB", false);
-            Movimento("correr", false);
-            Movimento("diagonalEsquerdaT", false);
-            Movimento("diagonalDireitaT", false);
-            Movimento("diagonalDireita", false);
-            Movimento("diagonalEsquerda", false);
-            Movimento("esquerda", true);
+            moveDir *= 0.5f;
+            controller.height = 1.26f;
+            controller.center = new Vector3(0, 0.73f, 0);
         }
-
-        //Movimento Diagonal Direita Frente
-        if (Input.GetAxis("Vertical") > 0 && Input.GetAxis("Horizontal") > 0)
+        else
         {
-            Movimento("correr", false);
-            Movimento("direita", false);
-            Movimento("diagonalDireita", true);
-        }
-
-        //Movimento Diagonal Esquerda Frente
-        if (Input.GetAxis("Vertical") > 0 && Input.GetAxis("Horizontal") < 0)
-        {
-            Movimento("diagonalEsquerda", true);
-            Movimento("correr", false);
-            Movimento("esquerda", false);
-        }
-
-        //Movimento Diagonal Direita Trás
-        if (Input.GetAxis("Vertical") < 0 && Input.GetAxis("Horizontal") > 0)
-        {
-            Movimento("correrB", false);
-            Movimento("direita", false);
-            Movimento("diagonalDireitaT", true);
-        }
-
-        //Movimento Diagonal Esquerda Trás
-        else if (Input.GetAxis("Vertical") < 0 && Input.GetAxis("Horizontal") < 0)
-        {
-            Movimento("diagonalEsquerdaT", true);
-            Movimento("correrB", false);
-            Movimento("esquerda", false);
-        }
-
-        //Idle
-        if (Input.GetAxis("Vertical") == 0 && Input.GetAxis("Horizontal") == 0)
-        {
-            Movimento("correrB", false);
-            Movimento("correr", false);
-            Movimento("direita", false);
-            Movimento("esquerda", false);
-            Movimento("diagonalDireita", false);
-            Movimento("diagonalEsquerda", false);
-            Movimento("diagonalEsquerdaT", false);
-            Movimento("diagonalDireitaT", false);
+            moveDir *= 2f;
+            controller.height = 2.15f;
+            controller.center = new Vector3(0, 1.12f, 0);
         }
     }
 
-    public void Movimento(string nome, bool gatilho)
+    private void Corrida()
     {
-        animator.SetBool(nome, gatilho);
+        if(moveZ > 0)
+        {
+            AnimaBool("MovimentoZ", true);
+        }
+        else
+        {
+            AnimaBool("MovimentoZ", false);
+        }
+        if(Input.GetKey(KeyCode.LeftShift) && !abaixado)
+        {
+            AnimaFloat("InputVertical", 1.5f, 0.1f, Time.deltaTime * 10);
+            moveDir *= 2.1f;
+        }
     }
 }
