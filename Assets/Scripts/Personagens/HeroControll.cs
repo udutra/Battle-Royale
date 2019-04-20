@@ -12,7 +12,6 @@ public class HeroControll : MonoBehaviour, IAnima
     [SerializeField]
     public float puloForca;
     private bool abaixado;
-    public bool NoChaoBool;
 
     void Start()
     {
@@ -24,8 +23,7 @@ public class HeroControll : MonoBehaviour, IAnima
     {
         if (controller.isGrounded)
         {
-            AnimaBool("NoChao", false);
-            NoChaoBool = false;
+            AnimaBool("NoChao", true);
             CalculoMovimentoAng();
 
             //Pulo
@@ -36,12 +34,16 @@ public class HeroControll : MonoBehaviour, IAnima
         }
         else
         {
-            AnimaBool("NoChao", true);
-            NoChaoBool = true;
+            AnimaBool("NoChao", false);
         }
 
         moveDir.y -= gravidade * Time.deltaTime;
         controller.Move(moveDir);
+
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            DefineAnimacaoAbaixar();
+        }
     }
 
     /*private void MovimentoPersonagem()
@@ -159,7 +161,7 @@ public class HeroControll : MonoBehaviour, IAnima
         moveZ = Input.GetAxis("Vertical") * 2 * Time.deltaTime;
         moveX = Input.GetAxis("Horizontal") * 2 * Time.deltaTime;
 
-        transform.Rotate(0, Input.GetAxis("Mouse X") * 10, 0 * Time.deltaTime);
+        transform.Rotate(0, Input.GetAxis("Mouse X") * 10,0 * Time.deltaTime);
 
         Vector3 frente = transform.forward * moveZ;
         Vector3 lado = transform.right * moveX;
