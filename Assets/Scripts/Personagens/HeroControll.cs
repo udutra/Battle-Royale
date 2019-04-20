@@ -11,10 +11,22 @@ public class HeroControll : MonoBehaviour, IAnima
     public Animator animator;
     [SerializeField]
     public float puloForca;
+    [SerializeField]
     private bool abaixado;
+    public bool picareta;
+    public GameObject[] picaretaGO;
+    private bool ativaTempoReset;
+    public float comboTempoPadrao = 0.4f;
+    private float comboTempoAtual;
+    public ComboPicareta comboEstado;
 
     void Start()
     {
+        comboTempoAtual = comboTempoPadrao;
+        comboEstado = ComboPicareta.none;
+
+        picaretaGO[0].SetActive(false);
+        picaretaGO[1].SetActive(true);
         abaixado = false;
         AnimaBool("Abaixar", abaixado);
     }
@@ -44,103 +56,54 @@ public class HeroControll : MonoBehaviour, IAnima
         {
             DefineAnimacaoAbaixar();
         }
+
+        //Novo Armado Desarmado
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            animator.SetLayerWeight(2, 0);
+            picareta = !picareta;
+            animator.SetTrigger("Armado");
+        }
+
+        if (picareta)
+        {
+            if (Input.GetKeyDown(KeyCode.P)) {
+
+                if (comboEstado == ComboPicareta.golpe2)
+                {
+                    return;
+                }
+
+                comboEstado++;
+                ativaTempoReset = true;
+                comboTempoAtual = comboTempoPadrao;
+
+                if (comboEstado == ComboPicareta.golpe1)
+                {
+                    AnimaBool("Golpe1", true);
+                }
+                if (comboEstado == ComboPicareta.golpe2)
+                {
+                    AnimaBool("Golpe2", true);
+                }
+
+                ResetCombo();
+
+                if (moveX != 0 || moveZ != 0)
+                {
+                    animator.SetLayerWeight(4, 0);
+                    animator.SetLayerWeight(3, 0.5f);
+                }
+                else if (moveX == 0 && moveZ == 0)
+                {
+                    animator.SetLayerWeight(3, 0);
+                    animator.SetLayerWeight(4, 1);
+                }
+            }
+        }
     }
 
-    /*private void MovimentoPersonagem()
-    {
-        //Moviemnto do Eixo Z +
-        if(Input.GetAxis("Vertical") > 0)
-        {
-            AnimaBool("direita", false);
-            AnimaBool("esquerda", false);
-            AnimaBool("diagonalDireita", false);
-            AnimaBool("diagonalEsquerda", false);
-            AnimaBool("correrB", false);
-            AnimaBool("correr", true);
-        }
-        
-        //Moviemnto do Eixo Z -
-        if (Input.GetAxis("Vertical") < 0)
-        {
-            AnimaBool("direita", false);
-            AnimaBool("esquerda", false);
-            AnimaBool("diagonalEsquerdaT", false);
-            AnimaBool("diagonalDireitaT", false);
-            AnimaBool("correr", false);
-            AnimaBool("correrB", true);
-        }
-
-        //Moviemnto do Eixo X +
-        if (Input.GetAxis("Horizontal") > 0)
-        {
-            AnimaBool("correrB", false);
-            AnimaBool("correr", false);
-            AnimaBool("diagonalDireita", false);
-            AnimaBool("diagonalEsquerda", false);
-            AnimaBool("diagonalEsquerdaT", false);
-            AnimaBool("diagonalDireitaT", false);
-            AnimaBool("direita", true);
-        }
-
-        //Moviemnto do Eixo X -
-        if (Input.GetAxis("Horizontal") < 0)
-        {
-            AnimaBool("correrB", false);
-            AnimaBool("correr", false);
-            AnimaBool("diagonalEsquerdaT", false);
-            AnimaBool("diagonalDireitaT", false);
-            AnimaBool("diagonalDireita", false);
-            AnimaBool("diagonalEsquerda", false);
-            AnimaBool("esquerda", true);
-        }
-
-        //Movimento Diagonal Direita Frente
-        if (Input.GetAxis("Vertical") > 0 && Input.GetAxis("Horizontal") > 0)
-        {
-            AnimaBool("correr", false);
-            AnimaBool("direita", false);
-            AnimaBool("diagonalDireita", true);
-        }
-
-        //Movimento Diagonal Esquerda Frente
-        if (Input.GetAxis("Vertical") > 0 && Input.GetAxis("Horizontal") < 0)
-        {
-            AnimaBool("diagonalEsquerda", true);
-            AnimaBool("correr", false);
-            AnimaBool("esquerda", false);
-        }
-
-        //Movimento Diagonal Direita Trás
-        if (Input.GetAxis("Vertical") < 0 && Input.GetAxis("Horizontal") > 0)
-        {
-            AnimaBool("correrB", false);
-            AnimaBool("direita", false);
-            AnimaBool("diagonalDireitaT", true);
-        }
-
-        //Movimento Diagonal Esquerda Trás
-        else if (Input.GetAxis("Vertical") < 0 && Input.GetAxis("Horizontal") < 0)
-        {
-            AnimaBool("diagonalEsquerdaT", true);
-            AnimaBool("correrB", false);
-            AnimaBool("esquerda", false);
-        }
-
-        //Idle
-        if (Input.GetAxis("Vertical") == 0 && Input.GetAxis("Horizontal") == 0)
-        {
-            AnimaBool("correrB", false);
-            AnimaBool("correr", false);
-            AnimaBool("direita", false);
-            AnimaBool("esquerda", false);
-            AnimaBool("diagonalDireita", false);
-            AnimaBool("diagonalEsquerda", false);
-            AnimaBool("diagonalEsquerdaT", false);
-            AnimaBool("diagonalDireitaT", false);
-        }
-    }*/
-
-    public void AnimaBool(string nome, bool gatilho)
+     public void AnimaBool(string nome, bool gatilho)
     {
         animator.SetBool(nome, gatilho);
     }
@@ -161,13 +124,13 @@ public class HeroControll : MonoBehaviour, IAnima
         moveZ = Input.GetAxis("Vertical") * 2 * Time.deltaTime;
         moveX = Input.GetAxis("Horizontal") * 2 * Time.deltaTime;
 
-        transform.Rotate(0, Input.GetAxis("Mouse X") * 10,0 * Time.deltaTime);
+        transform.Rotate(0, Input.GetAxis("Mouse X") * 10, 0 * Time.deltaTime);
 
         Vector3 frente = transform.forward * moveZ;
         Vector3 lado = transform.right * moveX;
 
         moveDir = frente + lado;
-        
+
         AnimaFloat("InputVertical", Input.GetAxis("Vertical"), 0.1f, Time.deltaTime);
         AnimaFloat("InputHorizontal", Input.GetAxis("Horizontal"), 0.1f, Time.deltaTime);
 
@@ -179,13 +142,13 @@ public class HeroControll : MonoBehaviour, IAnima
     {
         if (abaixado)
         {
-            moveDir *= 0.5f;
+            moveDir = Vector3.ClampMagnitude(moveDir,0.01f) * 2;
             controller.height = 1.26f;
             controller.center = new Vector3(0, 0.73f, 0);
         }
-        else
+        else if(!Input.GetKey(KeyCode.LeftShift))
         {
-            moveDir *= 2f;
+            moveDir = Vector3.ClampMagnitude(moveDir, 0.01f) * 6;
             controller.height = 2.15f;
             controller.center = new Vector3(0, 1.12f, 0);
         }
@@ -193,7 +156,7 @@ public class HeroControll : MonoBehaviour, IAnima
 
     private void Corrida()
     {
-        if(moveZ > 0)
+        if (moveZ > 0)
         {
             AnimaBool("MovimentoZ", true);
         }
@@ -201,10 +164,78 @@ public class HeroControll : MonoBehaviour, IAnima
         {
             AnimaBool("MovimentoZ", false);
         }
-        if(Input.GetKey(KeyCode.LeftShift) && !abaixado)
+
+        if (moveX != 0)
         {
-            AnimaFloat("InputVertical", 1.5f, 0.1f, Time.deltaTime * 10);
-            moveDir *= 2.1f;
+            AnimaBool("MovimentoX", true);
         }
+        else
+        {
+            AnimaBool("MovimentoX", false);
+        }
+
+        if (Input.GetKey(KeyCode.LeftShift) && !abaixado)
+        {
+            AnimaFloat("InputVertical", Input.GetAxis("Vertical") * 2.3f, 0.05f, Time.deltaTime * 10);
+            AnimaFloat("InputHorizontal", Input.GetAxis("Horizontal") * 2.3f, 0.05f, Time.deltaTime * 10);
+            moveDir = Vector3.ClampMagnitude(moveDir, 0.01f) * 11;
+        }
+    }
+
+    private void AjustaPesoPicareta()
+    {
+        if (picareta)
+        {
+            animator.SetLayerWeight(2, 1);
+        }
+    }
+
+    private void DefineArma_Armado()
+    {
+        if (picareta)
+        {
+            picaretaGO[0].SetActive(true);
+            picaretaGO[1].SetActive(false);
+        }
+    }
+
+    private void DefineArma_Desarmado()
+    {
+        if (!picareta)
+        {
+            picaretaGO[0].SetActive(false);
+            picaretaGO[1].SetActive(true);
+        }
+    }
+
+    private void ResetCombo()
+    {
+        print("Entrou mo ResetCombo");
+        print("ativaTempoReset: " + ativaTempoReset);
+        if (ativaTempoReset)
+        {
+            print("Entrou no ativaTempoReset");
+            comboTempoAtual -= Time.deltaTime;
+
+            print("comboTempoAtual: " + comboTempoAtual);
+            if (comboTempoAtual <= 0)
+            {
+                print("Entrou mo comboTempoAtual");
+                comboEstado = ComboPicareta.none;
+                ativaTempoReset = false;
+                comboTempoAtual = comboTempoPadrao;
+            }
+        }
+    }
+
+    private void FimAtaque()
+    {
+        AnimaBool("Golpe1", false);
+    }
+
+    private void FimCombo()
+    {
+        AnimaBool("Golpe2", false);
+        AnimaBool("Golpe1", false);
     }
 }
